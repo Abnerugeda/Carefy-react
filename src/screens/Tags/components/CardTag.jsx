@@ -1,26 +1,44 @@
 import { Card, Typography } from "@material-tailwind/react";
+import hexToRgba from "hex-to-rgba";
 import { TagIcon } from "lucide-react";
 import React from "react";
 
 export default function CardTag({ nome, codigoTag, descricao, cor }) {
-  return (
-    <Card className=" relative bg-white w-52 h-52">
-      <TagIcon style={{color: cor}} className="absolute top-0 right-[-15px]"/>
+  const getContrastColor = (hexColor) => {
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
 
-      <div className="m-2 overflow-hidden overflow-ellipsis">
-        <Typography variant="h5" color="black">
-          {nome}
-        </Typography>
-        <div className="bg-gray-300 w-full h-[1px]" />
-        <Typography className="mb-1" variant="h6">
-          Código: {codigoTag}
-        </Typography>
-        <Typography variant="h6">{descricao}</Typography>
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness < 128 ? "white" : "black";
+  };
+
+  const textColor = getContrastColor(cor);
+
+  return (
+    <Card className="bg-white  rounded-tl-none relative w-58 h-20">
+      <div className="flex gap-2 overflow-hidden overflow-elipses">
+        <div style={{ backgroundColor: cor }} className="w-12 h-20 rounded-bl-lg " />
+        <div>
+          <Typography
+            variant="h6"
+            className="font-bold"
+          >
+            {codigoTag}
+          </Typography>
+          <Typography
+            variant="h6"
+            color="black"
+          >
+            {nome}
+          </Typography>
+        </div>
       </div>
-      <div
-        style={{ backgroundColor: cor }}
-        className={`absolute bottom-0 rounded-b-lg w-full h-6 bottom-0`}
-      ></div>
+      <TagIcon
+        style={{ color: cor }}
+        className="absolute bottom-[-10px] right-[-5px]"
+      />
     </Card>
   );
 }
