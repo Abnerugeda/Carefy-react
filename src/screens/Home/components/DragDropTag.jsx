@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-
-const getItems = (count, offset = 0) =>
-  Array.from({ length: count }, (v, k) => k).map((k) => ({
-    id: `item-${k + offset}`,
-    content: `item ${k + offset}`,
-  }));
+import { TagIcon } from "lucide-react";
+import { Typography } from "@material-tailwind/react";
+import axios from "axios";
+import { data } from "autoprefixer";
+const urlApi = import.meta.env.VITE_URL_API;
 
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
@@ -25,34 +24,18 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-const grid = 8;
-
-const getItemStyle = (isDragging, draggableStyle) => ({
-  userSelect: "none",
-  padding: grid * 2,
-  margin: `0 0 ${grid}px 0`,
-  background: isDragging ? "lightgreen" : "grey",
-  ...draggableStyle,
-});
-
-const getListStyle = (isDraggingOver) => ({
-  background: isDraggingOver ? "lightgrey" : "white",
-  padding: grid,
-  width: 250,
-});
-
 const DragDropTag = () => {
-  const [state, setState] = useState({
-    items: getItems(10),
-    selected: getItems(5, 10),
-  });
+  const [data, setData] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
+  
+  useEffect(() => {
+    async function fetchData() {
+      const response = await axios.get(`${urlApi}/tags`);
+      setData(response.data.data);
+    }
 
-  const id2List = {
-    droppable: "items",
-    droppable2: "selected",
-  };
-
-  const getList = (id) => state[id2List[id]];
+    fetchData();
+  }, []);
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -62,57 +45,59 @@ const DragDropTag = () => {
     }
 
     if (source.droppableId === destination.droppableId) {
-      const items = reorder(
-        getList(source.droppableId),
+      const reorderedItems = reorder(
+        source.droppableId === "droppable" ? data : selectedData,
         source.index,
         destination.index
       );
 
-      let updatedState = { items };
-
-      if (source.droppableId === "droppable2") {
-        updatedState = { selected: items };
+      if (source.droppableId === "droppable") {
+        setData(reorderedItems);
+      } else {
+        setSelectedData(reorderedItems);
       }
-
-      setState((prevState) => ({ ...prevState, ...updatedState }));
     } else {
       const result = move(
-        getList(source.droppableId),
-        getList(destination.droppableId),
+        source.droppableId === "droppable" ? data : selectedData,
+        destination.droppableId === "droppable" ? data : selectedData,
         source,
         destination
       );
 
-      setState((prevState) => ({
-        ...prevState,
-        items: result.droppable,
-        selected: result.droppable2,
-      }));
+      setData(result.droppable);
+      setSelectedData(result.droppable2);
+
+      console.log(result.droppable2);
     }
   };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className=" h-96 flex flex-col overflow-scroll">
+      <div className="m-2 h-96 w-full flex flex-col gap-5">
+        <Typography className="-mb-2" variant="h6">
+          Arraste aqui a tag do seu paciente
+        </Typography>
         <Droppable droppableId="droppable">
-          {(provided, snapshot) => (
+          {(provided) => (
             <div
               ref={provided.innerRef}
-              style={getListStyle(snapshot.isDraggingOver)}
+              className=" h-96 overflow-scroll"
             >
-              {state.items.map((item, index) => (
-                <Draggable key={item.id} draggableId={item.id} index={index}>
-                  {(provided, snapshot) => (
+              {data.map((item, index) => (
+                <Draggable
+                  key={item.Codigo_Tag}
+                  draggableId={item.Codigo_Tag}
+                  index={index}
+                >
+                  {(provided) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      style={getItemStyle(
-                        snapshot.isDragging,
-                        provided.draggableProps.style
-                      )}
+                      className="flex gap-3 p-2"
                     >
-                      {item.content}
+                      <TagIcon  color={item.Cor}/>
+                      {item.Nome}
                     </div>
                   )}
                 </Draggable>
@@ -121,25 +106,28 @@ const DragDropTag = () => {
             </div>
           )}
         </Droppable>
+
+        <Typography className="-mb-2" variant="h6">
+          Suas Tags cadastradas
+        </Typography>
         <Droppable droppableId="droppable2">
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              style={getListStyle(snapshot.isDraggingOver)}
-            >
-              {state.selected.map((item, index) => (
-                <Draggable key={item.id} draggableId={item.id} index={index}>
-                  {(provided, snapshot) => (
+          {(provided) => (
+            <div className=" h-96 overflow-scroll" ref={provided.innerRef}>
+              {selectedData.map((item, index) => (
+                <Draggable
+                  key={item.Codigo_Tag}
+                  draggableId={item.Codigo_Tag}
+                  index={index}
+                >
+                  {(provided) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      style={getItemStyle(
-                        snapshot.isDragging,
-                        provided.draggableProps.style
-                      )}
+                      className="flex h-[50px] gap-3 p-2"
                     >
-                      {item.content}
+                      <TagIcon color={item.Cor} />
+                      {item.Nome}
                     </div>
                   )}
                 </Draggable>
