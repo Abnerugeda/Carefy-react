@@ -24,10 +24,10 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-const DragDropTag = () => {
+const DragDropTag = ({ setSelectedTag }) => {
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
-  
+
   useEffect(() => {
     async function fetchData() {
       const response = await axios.get(`${urlApi}/tags`);
@@ -66,23 +66,19 @@ const DragDropTag = () => {
 
       setData(result.droppable);
       setSelectedData(result.droppable2);
-
-      console.log(result.droppable2);
+      setSelectedTag(result.droppable2);
     }
   };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="m-2 h-96 w-full flex flex-col gap-5">
+      <div className="m-2 h-96 w-1/2 flex flex-col gap-5">
         <Typography className="-mb-2" variant="h6">
-          Arraste aqui a tag do seu paciente
+          Suas Tags cadastradas
         </Typography>
         <Droppable droppableId="droppable">
           {(provided) => (
-            <div
-              ref={provided.innerRef}
-              className=" h-96 overflow-scroll"
-            >
+            <div ref={provided.innerRef} className=" h-96 overflow-scroll">
               {data.map((item, index) => (
                 <Draggable
                   key={item.Codigo_Tag}
@@ -96,7 +92,7 @@ const DragDropTag = () => {
                       {...provided.dragHandleProps}
                       className="flex gap-3 p-2"
                     >
-                      <TagIcon  color={item.Cor}/>
+                      <TagIcon color={item.Cor} />
                       {item.Nome}
                     </div>
                   )}
@@ -108,7 +104,7 @@ const DragDropTag = () => {
         </Droppable>
 
         <Typography className="-mb-2" variant="h6">
-          Suas Tags cadastradas
+          Arraste aqui a tag do seu paciente
         </Typography>
         <Droppable droppableId="droppable2">
           {(provided) => (

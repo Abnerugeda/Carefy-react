@@ -18,8 +18,7 @@ export default async function CadastrarTags(
   };
   try {
     const response = await axios.post(`${urlApi}/tags`, data);
-    console.log(response.data)
-    console.log(response.status)
+    
     if (response.status === 201) {
       Swal.fire("Tag cadastrada!", "bom trabalho 😎", "success");
       return 201;

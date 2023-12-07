@@ -10,10 +10,17 @@ import {
   Input,
 } from "@material-tailwind/react";
 import axios from "axios";
-import { PencilIcon, Plus, SearchIcon, Trash2Icon } from "lucide-react";
+import {
+  PencilIcon,
+  Plus,
+  SearchIcon,
+  TagIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DialogCreatePacientes } from "../Home/components/DialogCreatePacientes";
+import { DialogViewTagsPacientes } from "../Home/components/DialogViewTagsPacientes";
 
 const urlApi = import.meta.env.VITE_URL_API;
 
@@ -42,33 +49,35 @@ export function TablePacientes() {
   const [dataPacientes, setDataPacientes] = useState([]);
   const [pesquisar, setPesquisar] = useState("");
 
+  async function fetchData() {
+    try {
+      const response = await axios.get(`${urlApi}/pacientes`);
+      setDataPacientes(response.data.data);
+      console.log(urlApi);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(`${urlApi}/pacientes`);
+        const response = await axios.post(`${urlApi}/pesquisarPaciente`, {
+          termo: pesquisar,
+        });
         setDataPacientes(response.data.data);
-        console.log(urlApi)
+        console.log(urlApi);
       } catch (error) {
         console.error(error);
       }
     }
 
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchData() {
-        try {
-          const response = await axios.post(`${urlApi}/pesquisarPaciente`, {termo: pesquisar});
-          setDataPacientes(response.data.data);
-          console.log(urlApi)
-        } catch (error) {
-          console.error(error);
-        }
-      }
-  
-      fetchData();
-  }, [pesquisar])
+  }, [pesquisar]);
 
   return (
     <Card className="h-screen w-full">
@@ -86,12 +95,14 @@ export function TablePacientes() {
             <div className="w-full md:w-72">
               <Input
                 value={pesquisar}
-                onChange={(e)=>{setPesquisar(e.target.value)}}
+                onChange={(e) => {
+                  setPesquisar(e.target.value);
+                }}
                 label="Pesquisar"
                 icon={<SearchIcon className="h-5 w-5" />}
               />
             </div>
-            <DialogCreatePacientes/>
+            <DialogCreatePacientes fetchData={fetchData} />
           </div>
         </div>
       </CardHeader>
@@ -118,12 +129,7 @@ export function TablePacientes() {
           <tbody>
             {dataPacientes.map(
               (
-                {
-                 Nome,
-                 Codigo_Paciente,
-                 Data_Nascimento,
-                 Telefone
-                },
+                { Nome, Codigo_Paciente, Data_Nascimento, Telefone, Tags },
                 index
               ) => {
                 const isLast = index === TABLE_ROWS.length - 1;
@@ -132,9 +138,10 @@ export function TablePacientes() {
                   : "p-4 border-b border-blue-gray-50";
 
                 return (
-                  <tr key={Nome}>
+                  <tr key={Codigo_Paciente}>
                     <td className={classes}>
-                      <div className="flex items-center gap-3">
+                    
+                      <div className="flex flex-col gap-3 ">
                         <Typography
                           variant="small"
                           color="blue-gray"
@@ -142,6 +149,11 @@ export function TablePacientes() {
                         >
                           {Nome}
                         </Typography>
+                        <div className="grid grid-cols-4 cursor-pointer">
+                          {Tags.map((tag) => {
+                            return <DialogViewTagsPacientes tags={Tags} cor={tag.Cor}/>
+                          })}
+                        </div>
                       </div>
                     </td>
                     <td className={classes}>
@@ -155,13 +167,13 @@ export function TablePacientes() {
                     </td>
                     <td className={classes}>
                       <div className="w-full">
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {Telefone}
-                      </Typography>
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
+                        >
+                          {Telefone}
+                        </Typography>
                       </div>
                     </td>
                     <td className={classes}>
@@ -192,9 +204,7 @@ export function TablePacientes() {
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-       
-      </CardFooter>
+      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4"></CardFooter>
     </Card>
   );
 }
