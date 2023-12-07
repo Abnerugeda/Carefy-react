@@ -4,28 +4,28 @@ import Swal from "sweetalert2";
 
 const urlApi = import.meta.env.VITE_URL_API;
 
-export default async function CadastrarTags(
+export default async function EditarTags(
   nomeTag,
   descricao,
+  newCodigoTag,
   codigoTag,
   cor
 ) {
   const data = {
     Nome: nomeTag,
     Descricao: descricao,
-    Codigo_Tag: codigoTag,
+    Codigo_Tag: newCodigoTag,
     Cor: cor,
   };
   try {
-    const response = await axios.post(`${urlApi}/tags`, data);
+    const response = await axios.put(`${urlApi}/tags/${codigoTag}`, data);
     console.log(response.data)
-    console.log(response.status)
-    if (response.status === 201) {
-      Swal.fire("Tag cadastrada!", "bom trabalho 😎", "success");
-      return 201;
+    if (response.status === 200) {
+      Swal.fire("Tag Editada!", "bom trabalho 😎", "success");
+      return 200;
     } else if (response.status === 203) {
       Swal.fire(
-        "Tag já cadastrada!",
+        "Código já cadastrado em outra tag!",
         "Altere o código e tente novamente 🫡",
         "success"
       );

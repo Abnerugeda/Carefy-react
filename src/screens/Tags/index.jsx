@@ -13,10 +13,10 @@ import React, { useEffect, useState } from "react";
 import CardTag from "./components/CardTag";
 import axios from "axios";
 import { DialogCreateTag } from "./components/DialogCreateTag";
+import { DialogViewTag } from "./components/DialogViewTag";
 const urlApi = import.meta.env.VITE_URL_API;
 
 export default function Tags() {
-
   const [dataTags, setDataTags] = useState([]);
   async function fetchData() {
     try {
@@ -44,7 +44,7 @@ export default function Tags() {
             </Typography>
           </div>
           <div className="flex w-full shrink-0 gap-2 md:w-max">
-            <DialogCreateTag fetchData={fetchData}/>
+            <DialogCreateTag fetchData={fetchData} />
           </div>
         </div>
       </CardHeader>
@@ -52,7 +52,8 @@ export default function Tags() {
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {dataTags.map((value) => {
             return (
-              <CardTag
+              <DialogViewTag
+                fetchData={fetchData}
                 key={value.Codigo_Tag}
                 nome={value.Nome}
                 descricao={value.Descricao}
