@@ -13,6 +13,7 @@ import axios from "axios";
 import { PencilIcon, Plus, SearchIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { DialogCreatePacientes } from "../Home/components/DialogCreatePacientes";
 
 const urlApi = import.meta.env.VITE_URL_API;
 
@@ -90,11 +91,7 @@ export function TablePacientes() {
                 icon={<SearchIcon className="h-5 w-5" />}
               />
             </div>
-            <Link to={"/novoPedido"}>
-              <Button className="flex items-center gap-3" color="blue" size="sm">
-                <Plus strokeWidth={2} className="h-4 w-4" /> Cadastrar paciente
-              </Button>
-            </Link>
+            <DialogCreatePacientes/>
           </div>
         </div>
       </CardHeader>
