@@ -21,6 +21,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DialogCreatePacientes } from "../Home/components/DialogCreatePacientes";
 import { DialogViewTagsPacientes } from "../Home/components/DialogViewTagsPacientes";
+import { DialogUpdatePacientes } from "../Home/components/DialogUpdatePacientes";
+import DeletePaciente from "../../controller/Pacientes/DeletePaciente";
+import Swal from "sweetalert2";
 
 const urlApi = import.meta.env.VITE_URL_API;
 
@@ -64,7 +67,7 @@ export function TablePacientes() {
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchPesquisa() {
       try {
         const response = await axios.post(`${urlApi}/pesquisarPaciente`, {
           termo: pesquisar,
@@ -76,7 +79,7 @@ export function TablePacientes() {
       }
     }
 
-    fetchData();
+    fetchPesquisa();
   }, [pesquisar]);
 
   return (
@@ -127,80 +130,101 @@ export function TablePacientes() {
             </tr>
           </thead>
           <tbody>
-            {dataPacientes.map(
-              (
-                { Nome, Codigo_Paciente, Data_Nascimento, Telefone, Tags },
-                index
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
+            {dataPacientes.map((paciente, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={Codigo_Paciente}>
-                    <td className={classes}>
-                    
-                      <div className="flex flex-col gap-3 ">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {Nome}
-                        </Typography>
-                        <div className="grid grid-cols-4 cursor-pointer">
-                          {Tags.map((tag) => {
-                            return <DialogViewTagsPacientes tags={Tags} cor={tag.Cor}/>
-                          })}
-                        </div>
+              return (
+                <tr key={paciente.Codigo_Paciente}>
+                  <td className={classes}>
+                    <div className="flex flex-col gap-3 ">
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {paciente.Nome}
+                      </Typography>
+                      <div className="grid grid-cols-4 cursor-pointer">
+                        {paciente.Tags.map((tag) => {
+                          return (
+                            <DialogViewTagsPacientes
+                              tags={paciente.Tags}
+                              cor={tag.Cor}
+                            />
+                          );
+                        })}
                       </div>
-                    </td>
-                    <td className={classes}>
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {paciente.Data_Nascimento}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <div className="w-full">
                       <Typography
                         variant="small"
                         color="blue-gray"
                         className="font-normal"
                       >
-                        {Data_Nascimento}
+                        {paciente.Telefone}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-full">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {Telefone}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {paciente.Codigo_Paciente}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <DialogUpdatePacientes
+                      pacienteData={paciente}
+                      fetchData={fetchData}
+                    />
+                    <Tooltip content="Deletar Paciente">
+                      <IconButton
+                        onClick={() => {
+                          Swal.fire({
+                            title: "Você tem certeza?",
+                            text: "😬😬😬😬",
+                            icon: "warning",
+                            showCancelButton: true,
+                            cancelButtonText: "Cancelar",
+                            confirmButtonText: "Sim, deletar!",
+                          }).then(async (result) => {
+                            if (result.isConfirmed) {
+                              console.log(paciente.Codigo_Paciente)
+                              if (
+                                (await DeletePaciente(
+                                  paciente.Codigo_Paciente
+                                )) === 200
+                              ) {
+                                fetchData();
+                              }
+                            }
+                          });
+                        }}
+                        variant="text"
                       >
-                        {Codigo_Paciente}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Tooltip content="Editar Paciente">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Deletar Paciente">
-                        <IconButton variant="text">
-                          <Trash2Icon className="h-4 w-4 text-red-500" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+                        <Trash2Icon className="h-4 w-4 text-red-500" />
+                      </IconButton>
+                    </Tooltip>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </CardBody>

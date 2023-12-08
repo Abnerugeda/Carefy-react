@@ -20,6 +20,13 @@ export default async function CadastrarPaciente(
   const dataOriginal = parse(dataNascimento, 'dd/MM/yyyy', new Date());
   const dataFormatada = format(dataOriginal, 'yyyy-MM-dd');
 
+conjTag.forEach(obj => {
+  obj.Codigo_Paciente = codigoPaciente;
+  delete obj.Nome;
+  delete obj.Cor;
+  delete obj.Descricao;
+});
+
   const data = {
     Nome: nome,
     Codigo_Paciente: codigoPaciente,
@@ -31,17 +38,13 @@ export default async function CadastrarPaciente(
     Data_Nascimento: dataFormatada,
     UF: uf,
     Bairro: bairro,
+    Tags: conjTag
   };
+
+  console.log(data);
 
   try {
     const response = await axios.post(`${urlApi}/pacientes`, data);
-    conjTag.map(async (tag) => {
-      const dataTag = {
-        Codigo_Tag: tag.Codigo_Tag,
-        Codigo_Paciente: codigoPaciente
-      }
-      await axios.post(`${urlApi}/tagsPaciente`, dataTag)
-    })
     if (response.status === 201) {
       Swal.fire("Paciente Cadastrado com sucesso!", "bom trabalho 😎", "success");
       return 201;

@@ -24,16 +24,24 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-const DragDropTag = ({ setSelectedTag }) => {
+const DragDropTag = ({ setSelectedTag, selectedTag }) => {
   const [data, setData] = useState([]);
-  const [selectedData, setSelectedData] = useState([]);
+  const [selectedData, setSelectedData] = useState(selectedTag);
 
   useEffect(() => {
     async function fetchData() {
       const response = await axios.get(`${urlApi}/tags`);
-      setData(response.data.data);
-    }
+      const responseData = response.data.data;
 
+      const filteredData = responseData.filter(
+        (item) =>
+          !selectedData.some(
+            (selectedItem) => selectedItem.Codigo_Tag === item.Codigo_Tag
+          )
+      );
+
+      setData(filteredData);
+    }
     fetchData();
   }, []);
 

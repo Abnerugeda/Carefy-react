@@ -7,25 +7,28 @@ import {
   DialogFooter,
   Input,
   Typography,
+  IconButton,
+  Tooltip,
 } from "@material-tailwind/react";
-import { Plus } from "lucide-react";
+import { PencilIcon, Plus } from "lucide-react";
 import CadastrarPaciente from "../../../controller/Pacientes/CadastrarPaciente";
 import DragDropTag from "./DragDropTag";
 import ReactInputMask from "react-input-mask";
+import UpdatePaciente from "../../../controller/Pacientes/UpdatePaciente";
 
-export function DialogCreatePacientes({fetchData}) {
+export function DialogUpdatePacientes({ fetchData, pacienteData }) {
   const [open, setOpen] = useState(false);
-  const [cepPaciente, setCepPaciente] = useState("");
-  const [nome, setNome] = useState("");
-  const [codigoPaciente, setCodigoPaciente] = useState();
-  const [telefone, setTelefone] = useState();
-  const [dataNascimento, setDataNascimento] = useState();
-  const [logradouro, setLogradouro] = useState();
-  const [bairro, setBairro] = useState();
-  const [numeroCasa, setNumeroCasa] = useState();
-  const [uf, setUf] = useState();
-  const [complemento, setComplemento] = useState("");
-  const [selectedTag, setSelectedTag] = useState([]);
+  const [newcepPaciente, setCepPaciente] = useState(pacienteData.CEP);
+  const [newnome, setNome] = useState(pacienteData.Nome);
+  const [newcodigoPaciente, setCodigoPaciente] = useState(pacienteData.Codigo_Paciente);
+  const [newtelefone, setTelefone] = useState(pacienteData.Telefone);
+  const [newdataNascimento, setDataNascimento] = useState(pacienteData.Data_Nascimento);
+  const [newlogradouro, setLogradouro] = useState(pacienteData.Logradouro);
+  const [newbairro, setBairro] = useState(pacienteData.Bairro);
+  const [newnumeroCasa, setNumeroCasa] = useState(pacienteData.Numero_Casa);
+  const [newuf, setUf] = useState(pacienteData.UF);
+  const [newcomplemento, setComplemento] = useState(pacienteData.Complemento);
+  const [newselectedTag, setSelectedTag] = useState(pacienteData.Tags);
 
   const handleOpen = () => setOpen((cur) => !cur);
   const handleCepPaciente = (e) => setCepPaciente(e.target.value);
@@ -46,23 +49,25 @@ export function DialogCreatePacientes({fetchData}) {
 
   return (
     <>
-      <div className="mb-3 flex gap-3">
-        <Button
-          onClick={handleOpen}
-          className="flex items-center gap-3"
-          color="blue"
-          size="sm"
-        >
-          <Plus strokeWidth={2} className="h-4 w-4" /> Cadastrar paciente
-        </Button>
-      </div>
+      <Tooltip content="Editar Paciente">
+        <IconButton onClick={handleOpen} variant="text">
+          <PencilIcon className="h-4 w-4" />
+        </IconButton>
+      </Tooltip>
+
       <Dialog open={open} size={"lg"} handler={handleOpen}>
-        <DialogHeader>Cadastrar Paciente.</DialogHeader>
+        <DialogHeader>Editar Paciente.</DialogHeader>
         <DialogBody className="flex justify-between">
           <div className="flex flex-col gap-3 w-1/2">
-            <Input onChange={handleNome} color="blue" label="Nome" />
+            <Input
+              value={newnome}
+              onChange={handleNome}
+              color="blue"
+              label="Nome"
+            />
 
             <Input
+              value={newcodigoPaciente}
               onChange={handleCodigoPaciente}
               color="blue"
               label="Código Paciente"
@@ -71,6 +76,7 @@ export function DialogCreatePacientes({fetchData}) {
             <div className="flex gap-2">
               <div className="relative w-full min-w-[200px]  h-10">
                 <ReactInputMask
+                  value={newtelefone}
                   mask="(99) 99999-9999"
                   className={classInput}
                   onChange={handleTelefone}
@@ -81,6 +87,7 @@ export function DialogCreatePacientes({fetchData}) {
               </div>
               <div className="relative w-full min-w-[200px]  h-10">
                 <ReactInputMask
+                  value={newdataNascimento}
                   mask="99/99/9999"
                   className={classInput}
                   onChange={handleDataNascimento}
@@ -96,6 +103,7 @@ export function DialogCreatePacientes({fetchData}) {
             <div className="flex gap-2">
               <div className="relative w-full min-w-[200px] h-10">
                 <ReactInputMask
+                  value={newcepPaciente}
                   mask={"99999-999"}
                   className={classInput}
                   onChange={handleCepPaciente}
@@ -105,14 +113,21 @@ export function DialogCreatePacientes({fetchData}) {
                 <label className={labelInput}>CEP</label>
               </div>
               <Input
+                value={newlogradouro}
                 onChange={handleLogradouro}
                 color="blue"
                 label="Logradouro"
               />
             </div>
             <div className="flex gap-2">
-              <Input onChange={handleBairro} color="blue" label="Bairro" />
               <Input
+                value={newbairro}
+                onChange={handleBairro}
+                color="blue"
+                label="Bairro"
+              />
+              <Input
+                value={newnumeroCasa}
                 type="number"
                 onChange={handleNumeroCasa}
                 color="blue"
@@ -121,6 +136,7 @@ export function DialogCreatePacientes({fetchData}) {
             </div>
             <div className="relative w-20 h-10">
               <ReactInputMask
+                value={newuf}
                 mask="aa"
                 className={classInput}
                 onChange={handleUf}
@@ -130,12 +146,13 @@ export function DialogCreatePacientes({fetchData}) {
               <label className={labelInput}>UF</label>
             </div>
             <Input
+              value={newcomplemento}
               onChange={handleComplemento}
               color="blue"
               label="Complemento"
             />
           </div>
-          <DragDropTag selectedTag={[]} setSelectedTag={setSelectedTag}/>
+          <DragDropTag selectedTag={newselectedTag} setSelectedTag={setSelectedTag} />
         </DialogBody>
         <DialogFooter>
           <Button
@@ -144,31 +161,31 @@ export function DialogCreatePacientes({fetchData}) {
             onClick={() => handleOpen(null)}
             className="mr-1"
           >
-            <span>Cancel</span>
+            <span>Cancelar</span>
           </Button>
           <Button
             variant="gradient"
             color="green"
             onClick={async () => {
               if (
-                (await CadastrarPaciente(
-                  nome,
-                  codigoPaciente,
-                  telefone,
-                  cepPaciente,
-                  logradouro,
-                  bairro,
-                  uf,
-                  numeroCasa,
-                  complemento,
-                  dataNascimento,
-                  selectedTag
-                )) === 201
+                (await UpdatePaciente(
+                  newnome,
+                  pacienteData.Codigo_Paciente,
+                  newcodigoPaciente,
+                  newtelefone,
+                  newcepPaciente,
+                  newlogradouro,
+                  newbairro,
+                  newuf,
+                  newnumeroCasa,
+                  newcomplemento,
+                  newdataNascimento,
+                  newselectedTag
+                )) === 200
               ) {
-                 fetchData()
+                fetchData();
               }
-               handleOpen();
-
+              handleOpen();
             }}
           >
             <span>Cadastrar</span>
