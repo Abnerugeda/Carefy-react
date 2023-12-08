@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3050,
-    host: 'abner-ugeda.com.br' // Altere para a porta desejada
+    port: 3050,// Altere para a porta desejada 
   },
 })
