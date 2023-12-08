@@ -51,10 +51,24 @@ const TABLE_ROWS = [
 export function TablePacientes() {
   const [dataPacientes, setDataPacientes] = useState([]);
   const [pesquisar, setPesquisar] = useState("");
+  const [dataTags, setDataTags] = useState([]);
+
+  async function fetchFilterTag(codigoTag) {
+    try {
+      const response = await axios.get(
+        `${urlApi}/pacientes/codigoTag/${codigoTag}`
+      );
+      setDataPacientes(response.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function fetchData() {
     try {
       const response = await axios.get(`${urlApi}/pacientes`);
+      const responseTag = await axios.get(`${urlApi}/tags`);
+      setDataTags(responseTag.data.data);
       setDataPacientes(response.data.data);
       console.log(urlApi);
     } catch (error) {
@@ -84,7 +98,7 @@ export function TablePacientes() {
 
   return (
     <Card className="h-screen w-full">
-      <CardHeader floated={false} shadow={false} className="rounded-none">
+      <CardHeader floated={false} shadow={false} className="h-48 rounded-none">
         <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
           <div>
             <Typography variant="h5" color="blue-gray">
@@ -105,8 +119,32 @@ export function TablePacientes() {
                 icon={<SearchIcon className="h-5 w-5" />}
               />
             </div>
-            <DialogCreatePacientes fetchData={fetchData} />
+            <div>
+              <DialogCreatePacientes fetchData={fetchData} />
+              <Button
+                onClick={() => fetchData()}
+                color="blue"
+                size="sm"
+                fullWidth
+              >
+                Limpar filtro
+              </Button>
+            </div>
           </div>
+        </div>
+        <div className="flex gap-2">
+          {dataTags.map((tag) => {
+            return (
+              <TagIcon
+                onClick={() => {
+                  fetchFilterTag(tag.Codigo_Tag);
+                }}
+                width={20}
+                className="hover:w-7 cursor-pointer"
+                color={tag.Cor}
+              />
+            );
+          })}
         </div>
       </CardHeader>
       <CardBody className="overflow-scroll h-full px-0">
@@ -205,7 +243,7 @@ export function TablePacientes() {
                             confirmButtonText: "Sim, deletar!",
                           }).then(async (result) => {
                             if (result.isConfirmed) {
-                              console.log(paciente.Codigo_Paciente)
+                              console.log(paciente.Codigo_Paciente);
                               if (
                                 (await DeletePaciente(
                                   paciente.Codigo_Paciente
